@@ -8,6 +8,7 @@ module.exports = function init(sails) {
             // const dotenv = require('dotenv');
             // dotenv.config();
             //Initializing mongoose
+            require('../../redis/init');
             require('../../mongoose/init');
             require('../../consumer/queue-consumers-init');
             // require('../../consumer/chunk-entity-processing-consumer-ini')

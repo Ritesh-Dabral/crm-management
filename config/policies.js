@@ -16,5 +16,6 @@ module.exports.policies = {
   * (`true` allows public access)                                            *
   *                                                                          *
   ***************************************************************************/
-  '*': true
+  '*': true,
+  'bulk/create-actions': ['rate-limiter']
 };

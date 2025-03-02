@@ -12,6 +12,10 @@ module.exports = {
     chunkEntityId: {
       type: 'string',
       required: true
+    },
+    attemptsRemaining:{
+      type: 'number',
+      required: true
     }
   },
 
@@ -27,7 +31,7 @@ module.exports = {
   fn: async function (inputs, exits) {
 
     const _chunkEntity = new ChunkEntity();
-    const chunkEntityResponse = (await _chunkEntity.getChunkEntities({query:{ _id: inputs.chunkEntityId, status: 'queued' }}))[0];
+    const chunkEntityResponse = (await _chunkEntity.getChunkEntities({query:{ _id: inputs.chunkEntityId, status: {$in:['queued', 'ongoing']} }}))[0];
     if (!chunkEntityResponse) {
       sails.log.info('Chunk entity not found or status is not queued for chunkEntityId:' + inputs.chunkEntityId);
       return exits.success();
@@ -60,10 +64,17 @@ module.exports = {
       });
       await session.commitTransaction();
     } catch (error) {
-      await _chunkEntity.updateOneChunkEntity({
-        query:{ _id: inputs.chunkEntityId},
-        update:{ $set:{status: 'ongoing', error: error.message}, $inc:{retry:1} }
-      });
+      if(!inputs.attemptsRemaining){
+        await _chunkEntity.updateOneChunkEntity({
+          query:{ _id: inputs.chunkEntityId},
+          update:{ $set:{status: 'failed', error: error.message}, $inc:{retry:1} }
+        });
+      }else{
+        await _chunkEntity.updateOneChunkEntity({
+          query:{ _id: inputs.chunkEntityId},
+          update:{ $set:{status: 'ongoing', error: error.message}, $inc:{retry:1} }
+        });
+      }
       await session.abortTransaction();
       throw error;
     } finally{

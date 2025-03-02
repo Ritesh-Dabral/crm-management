@@ -121,6 +121,8 @@ class BullQueueWorker extends WorkerInterface {
     const client = this.getClient();
     client.process('chunk-entity', 1, async (job) => {
       const messageData = job.data;
+      const attemptsMade = job.attemptsMade || 0;
+      const totalAttempts = job.opts.attempts || 3;
       const requiredKeys = ['chunkEntityId'];
 
       try {
@@ -131,7 +133,7 @@ class BullQueueWorker extends WorkerInterface {
         if (!isMessageValid) {
           throw new Error(`Missing required keys in job data: ${JSON.stringify(messageData)}`);
         }
-        await sails.helpers.file.chunkEntityProcessing.with({ chunkEntityId: messageData.chunkEntityId});
+        await sails.helpers.file.chunkEntityProcessing.with({ chunkEntityId: messageData.chunkEntityId, attemptsRemaining: totalAttempts-attemptsMade-1});
         sails.log.info('Chunk entity processing processed successfully for chunkEntityId:' + messageData.chunkEntityId);
         return Promise.resolve();
       } catch (error) {
