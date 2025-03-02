@@ -65,15 +65,15 @@ class TokenBucket {
 module.exports = async function isAuth(req, res, proceed) {
   try {
     const accountId = req.body.accountId;
-    const bucket = new TokenBucket(`${accountId}:rate_limit`, 10, 60000);
+    const bucket = new TokenBucket(`${accountId}:rate_limit`, 10000, 60000);
 
     const success = await bucket.requestToken(_.get(req.body, 'file.meta.rows', 0));
     if (!success) {
-      return res.status(429).json(res.generalResponse({ message: 'Too many requests. Try again later.' }));
+      return res.status(429).json(res.generalResponse({ message: 'Too many requests. Try again later.', error: true }));
     }
 
     return proceed();
   } catch (error) {
-    return res.status(500).json(res.generalResponse({ message: error.message }));
+    return res.status(500).json(res.generalResponse({ message: error.message, error: true }));
   }
 };

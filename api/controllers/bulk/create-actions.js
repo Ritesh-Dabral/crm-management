@@ -52,10 +52,12 @@ module.exports = {
           ]
       })
         if(!Array.isArray(data)){
-          throw new Error('Actions must be an array');
+          // throw new Error('Actions must be an array');
+          return false;
         }
         if(data.length === 0 || data.length > 10){
-          throw new Error('Actions must be between 1 and 10');
+          // throw new Error('Actions must be between 1 and 10');
+          return false;
         }
         data.forEach(action => {
           let isValid = true;
@@ -88,7 +90,8 @@ module.exports = {
           }
 
           if(!isValid){
-            throw new Error('Actions must be a list of objects in the format of '+example);
+            // throw new Error('Actions must be a list of objects in the format of '+example);
+            return false;
           }
         });
 
@@ -107,10 +110,12 @@ module.exports = {
               "columns":"number between 1 and 10"
           }})
         if(!Array.isArray(data)){
-          return new Error('files must be a list in the format of '+example);
+          // return new Error('files must be a list in the format of '+example);
+          return false;
         }
         if(data.length === 0 || data.length > 5){
-          return new Error('files must be between 1 and 5');
+          // return new Error('files must be between 1 and 5');
+          return false;
         }
         let file = data
         let isValid = true;
@@ -130,7 +135,7 @@ module.exports = {
           isValid = false;
         }
         if(!isValid){
-          throw new Error('files must be a list in the format of '+example);
+          return false
         }
         return true;
       }

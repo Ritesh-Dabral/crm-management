@@ -6,6 +6,7 @@ const path = require('path');
 const generateFakeRow = () => {
   return {
     firstName: faker.person.firstName(),
+    middleName: faker.person.middleName(),
     lastName: faker.person.lastName(),
     emailId: faker.internet.email(),
     contact: faker.phone.number(),
@@ -16,7 +17,7 @@ const generateFakeRow = () => {
 
 // Function to generate CSV content
 const generateCSV = (numRows) => {
-  const headers = ['firstName', 'lastName', 'email', 'contact', 'address', 'securityNumber'];
+  const headers = ['First Name', 'Mid name', 'Last Name', 'Personal Email', 'contacts', 'Addresses', 'SSN'];
   const rows = [headers.join(',')];
 
 
@@ -25,6 +26,7 @@ const generateCSV = (numRows) => {
     rows.push(
       [
         row.firstName,
+        row.middleName,
         row.lastName,
         row.emailId.toLowerCase(),
         row.contact,
@@ -52,7 +54,7 @@ if (!fs.existsSync(path.join(__dirname, '..', 'data'))) {
 
 // Generate 15000 rows of data
 console.log('Starting data generation...');
-const csvContent = generateCSV(15000);
+const csvContent = generateCSV(2500);
 
 // Write to file
 fs.writeFileSync(outputPath, csvContent, 'utf-8');
