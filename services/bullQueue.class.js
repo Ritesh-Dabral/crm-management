@@ -6,6 +6,15 @@ class BullQueueWorker extends WorkerInterface {
   constructor() {
     super();
     this.name = 'bullQueueWorker';
+    this.queue = null;
+  }
+
+  setQueue(queue){
+    this.queue = queue;
+  }
+
+  getQueue(){
+    return this.queue;
   }
 
   setName(name) {
@@ -39,6 +48,7 @@ class BullQueueWorker extends WorkerInterface {
       }
     } });
     this.setClient(client);
+    this.setQueue(queue);
   }
 
   getConfiguration(){
@@ -52,12 +62,18 @@ class BullQueueWorker extends WorkerInterface {
   }
 
   async fileChunkGeneration({actionId, delayInMs=0}) {
+    if(this.getQueue()!=='file-chunk-generation'){
+      throw Error(`Unexpected queue found. Initialize with correct queue`);
+    }
     const client = this.getClient();
     const resp = await client.add({actionId}, { removeOnComplete: true, removeOnFail: true, delay: delayInMs, deduplication:{id: actionId}});
     return resp;
   }
 
   async fileChunkGenerationQueueConsumer(){
+    if(this.getQueue()!=='file-chunk-generation'){
+      throw Error(`Unexpected queue found. Initialize with correct queue`);
+    }
     const client = this.getClient();
     client.process(1, async (job) => {
       const messageData = job.data;
@@ -79,9 +95,50 @@ class BullQueueWorker extends WorkerInterface {
   }
 
   async chunkEntityBulkQueueProducer({chunkEntity, delayInMs=0}){
+    if(this.getQueue()!=='chunk-entity'){
+      throw Error(`Unexpected queue found. Initialize with correct queue`);
+    }
     const client = this.getClient();
-    const resp = await client.addBulk(chunkEntity, { removeOnComplete: true, removeOnFail: true, delay: delayInMs});
+    const jobs = chunkEntity.map((ent)=>{
+      return {
+        name: 'chunk-entity',
+        data: ent,
+        opts: {removeOnComplete: true, removeOnFail: true, delay: delayInMs}
+      };
+    });
+    const resp = await client.addBulk(jobs);
+    console.log({resp})
+    const counts = await client.getJobCounts();
+    console.log("Job Counts:", counts);
+    // await client.add(chunkEntity[0], { removeOnComplete: true, removeOnFail: true, delay: delayInMs} );
     return resp;
+  }
+
+  async chunkEntityGenerationQueueConsumer(){
+    if(this.getQueue()!=='chunk-entity'){
+      throw Error(`Unexpected queue found. Initialize with correct queue`);
+    }
+    const client = this.getClient();
+    client.process('chunk-entity', 1, async (job) => {
+      const messageData = job.data;
+      const requiredKeys = ['chunkEntityId'];
+
+      try {
+        const isMessageValid = requiredKeys.every((key) => messageData.hasOwnProperty(key));
+
+        sails.log.info(`Processing chunk entity generation message:`, messageData);
+
+        if (!isMessageValid) {
+          throw new Error(`Missing required keys in job data: ${JSON.stringify(messageData)}`);
+        }
+        await sails.helpers.file.chunkEntityProcessing.with({ chunkEntityId: messageData.chunkEntityId});
+        sails.log.info('Chunk entity processing processed successfully for chunkEntityId:' + messageData.chunkEntityId);
+        return Promise.resolve();
+      } catch (error) {
+        sails.log.error('Error running chunk entity processing job:', error);
+        return Promise.reject(error);
+      }
+    });
   }
 
   async disconnect(){

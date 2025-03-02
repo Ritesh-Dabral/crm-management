@@ -11,6 +11,10 @@ class FileChunk{
   async updateOneChunk({query, set}, {session=null}){
     return await fcDao.updateOneChunk({query, set}, {session});
   }
+
+  async getFileChunkById({chunkId}){
+    return await fcDao.getFileChunkById({id: chunkId});
+  }
 }
 
 module.exports = FileChunk;

@@ -103,9 +103,8 @@ module.exports = {
     });
 
     const session = await mongoose.startSession();
-    await session.startTransaction();
-
     try {
+      await session.startTransaction();
 
       const chunkEntityMappings = [];
       const fileChunksResponse = await _fileChunk.createChunks({chunks: fileChunks}, {session});
@@ -123,10 +122,10 @@ module.exports = {
       const chunkEntityMappingResponse = await _chunkEntity.createChunkEntity({chunkEntities: chunkEntityMappings}, {session});
 
       const jobs = chunkEntityMappingResponse.map( (chunkEntityMapping) => {
-        return chunkEntityMapping._id.toString();
+        return {chunkEntityId:chunkEntityMapping._id.toString()};
       });
 
-      await worker.chunkEntityBulkQueueProducer({chunkEntity:jobs});
+      await worker.chunkEntityBulkQueueProducer({chunkEntity:jobs, delayInMs: 10000});
 
       await session.commitTransaction();
     } catch (error) {

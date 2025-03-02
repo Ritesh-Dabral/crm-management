@@ -1,6 +1,7 @@
 
 const mongoose = require('mongoose');
-
+const ChunkEntity = require('../../../services/chunkEntity.class');
+const FileChunk = require('../../../services/fileChunk.class');
 
 module.exports = {
   friendlyName: 'Chunk entity processing',
@@ -25,48 +26,58 @@ module.exports = {
 
   fn: async function (inputs, exits) {
 
-    const chunkEntityResponse = await chunkEntityMapping.findOne({ _id: inputs.chunkEntityId, status: 'queued' }).lean();
+    const _chunkEntity = new ChunkEntity();
+    const chunkEntityResponse = (await _chunkEntity.getChunkEntities({query:{ _id: inputs.chunkEntityId, status: 'queued' }}))[0];
     if (!chunkEntityResponse) {
       sails.log.info('Chunk entity not found or status is not queued for chunkEntityId:' + inputs.chunkEntityId);
       return exits.success();
     }
 
-    const chunks = await actionFileChunk.findOne({ _id: chunkEntityResponse.chunkId }).lean();
+    const _fileChunk = new FileChunk();
+
+    // const chunks = await _fileChunk.findOne({ _id: chunkEntityResponse.chunkId }).lean();
+    const chunks = await _fileChunk.getFileChunkById({chunkId: chunkEntityResponse.chunkId});
 
     const { entity, action, identifier, matches } = chunkEntityResponse.processConfig;
 
-    try {
+    const session = await mongoose.startSession();
 
+    let result = {};
+
+    try {
+      await session.startTransaction();
       switch (entity) {
         case 'contact':
-          await contactProcessing({ action, identifier, matches, chunks: chunks.chunk});
+          result = await contactProcessing({ action, identifier, matches, chunks: chunks.chunk},{session});
           break;
         default:
           sails.log.error('Invalid chunk entity type for chunkEntityId:' + inputs.chunkEntityId);
           break;
       }
 
-
-
-
-      return exits.success();
-
+      await _chunkEntity.updateOneChunkEntity({
+        query:{ _id: inputs.chunkEntityId},
+        update:{ $set:{status: 'done', result, error: null} }
+      });
+      await session.commitTransaction();
     } catch (error) {
-      sails.log.error(`Error in chunk generation for actionId: ${inputs.actionId}`, error);
-
-      await chunkEntityMapping.updateOne(
-        { id: inputs.chunkEntityId },
-        { status: 'failed', error: error.message }
-      );
-
-      return exits.success();
+      await _chunkEntity.updateOneChunkEntity({
+        query:{ _id: inputs.chunkEntityId},
+        update:{ $set:{status: 'ongoing', error: error.message}, $inc:{retry:1} }
+      });
+      await session.abortTransaction();
+      throw error;
+    } finally{
+      await session.endSession();
     }
+
+    return exits.success();
 
   },
 };
 
 
-async function contactProcessing({ action, identifier, matches, chunks }) {
+async function contactProcessing({ action, identifier, matches, chunks }, {session}) {
   const bulkQueries = [];
   chunks.forEach( (chunk) => {
     const filter = {};
@@ -111,8 +122,7 @@ async function contactProcessing({ action, identifier, matches, chunks }) {
     bulkQueries.push(bulkQuery);
   });
 
-  const session = await mongoose.startSession();
-  session.startTransaction();
+
 
   const result = {
     isFailed: false,
@@ -121,22 +131,10 @@ async function contactProcessing({ action, identifier, matches, chunks }) {
     nModified: 0,
     nUpserted: 0
   };
-  try {
-    // if a single query fails, the entire transaction should be rolled back, this is the concept of atomicity and chunk processing in our case
-    const resp = await contactEntity.bulkWrite(bulkQueries, { session  });
-    await session.commitTransaction();
-    result.nMatched = resp.nMatched;
-    result.nModified = resp.nModified;
-    result.nUpserted = resp.nUpserted;
-    console.log('Bulk write successful with transaction');
-  } catch (error) {
-    await session.abortTransaction(); // Rollback all changes
-    console.error('Transaction aborted due to error:', error);
-    result.isFailed = true;
-    result.error = error.message;
-  } finally {
-    session.endSession();
-  }
-
+  // if a single query fails, the entire transaction should be rolled back, this is the concept of atomicity and chunk processing in our case
+  const resp = await contactEntity.bulkWrite(bulkQueries, { session  });
+  result.nMatched = resp.nMatched;
+  result.nModified = resp.nModified;
+  result.nUpserted = resp.nUpserted;
   return result;
 }
