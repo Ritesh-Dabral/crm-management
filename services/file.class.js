@@ -24,8 +24,8 @@ class File {
     return file;
   }
 
-  async getFileById() {
-    const file = await fDao.getFileById(this.getFileId());
+  async getFileById({fileId}) {
+    const file = await fDao.getFileById({id:fileId});
     return file;
   }
 }

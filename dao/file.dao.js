@@ -2,7 +2,7 @@ class FileDao {
   constructor() {
   }
 
-  async getFileById(id) {
+  async getFileById({id}) {
     const _f = await file.findOne({ _id: id }).lean();
     return _f;
   }

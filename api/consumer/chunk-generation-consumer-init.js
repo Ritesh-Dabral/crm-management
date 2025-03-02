@@ -1,3 +1,9 @@
+const BullQueueWorker = require('../../services/bullQueue.class');
+const worker = new BullQueueWorker();
+
 (async () => {
-  await sails.helpers.bull.chunkGenerationConsumer.with()
-})().catch((err) => console.log(err));
+  worker.init('file-chunk-generation');
+  await worker.fileChunkGenerationQueueConsumer();
+})().catch((err) => {
+  console.log(err);
+});
