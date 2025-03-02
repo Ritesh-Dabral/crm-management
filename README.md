@@ -130,36 +130,8 @@ The system is built around five core models that handle different aspects of the
 
 ## API Documentation
 
-### Create Bulk Actions
-```javascript
-POST /bulk/create-actions
-
-Request Body:
-{
-  "accountId": "string",
-  "actionName": "string",
-  "processingDelayInMinutes": number, // 0-10080
-  "actions": [{
-    "entity": "string",
-    "action": "string",
-    "identifier": {
-      "create": ["string"],
-      "update": ["string"]
-    },
-    "matches": [{
-      "csvField": "string",
-      "internalProperty": "string"
-    }]
-  }],
-  "file": {
-    "url": "string",
-    "meta": {
-      "rows": number, // 1-10000
-      "columns": number // 1-100
-    }
-  }
-}
-```
+For detailed API testing and examples, you can use our Postman collection:
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://www.postman.com/crimson-star-8222/crm-processing/collection/9z0uncp/api-documentation-reference?action=share&creator=4788957&active-environment=4788957-b3575859-b61d-47cf-893e-2b72e726641e)
 
 ## Rate Limiting
 
