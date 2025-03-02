@@ -33,6 +33,10 @@ class ActionDao {
   async getActionById({id}){
     return await action.findOne({_id: id}).lean();
   }
+
+  async updateOneAction({query, update}, {session=null}){
+    return await action.updateOne(query, update, {session});
+  }
 }
 
 module.exports = ActionDao;

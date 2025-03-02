@@ -35,8 +35,7 @@ module.exports = {
 
     const _fileChunk = new FileChunk();
 
-    // const chunks = await _fileChunk.findOne({ _id: chunkEntityResponse.chunkId }).lean();
-    const chunks = await _fileChunk.getFileChunkById({chunkId: chunkEntityResponse.chunkId});
+    const chunks = await _fileChunk.getFileChunkById({fileChunkId: chunkEntityResponse.fileChunkId});
 
     const { entity, action, identifier, matches } = chunkEntityResponse.processConfig;
 

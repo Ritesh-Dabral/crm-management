@@ -35,6 +35,10 @@ class Action {
   async getActionById({actionId}){
     return await aDao.getActionById({id:actionId});
   }
+
+  async updateOneAction({query, update}, {session=null}){
+    return await aDao.updateOneAction({query, update}, {session});
+  }
 }
 
 module.exports = Action;

@@ -12,8 +12,12 @@ class FileChunk{
     return await fcDao.updateOneChunk({query, set}, {session});
   }
 
-  async getFileChunkById({chunkId}){
-    return await fcDao.getFileChunkById({id: chunkId});
+  async getFileChunkById({fileChunkId}){
+    return await fcDao.getFileChunkById({id: fileChunkId});
+  }
+
+  async getFileChunks({query, sort={}, skip=0, limit=0}){
+    return await fcDao.getFileChunks({query, sort, skip, limit});
   }
 }
 

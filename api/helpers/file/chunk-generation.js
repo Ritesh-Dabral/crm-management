@@ -112,8 +112,9 @@ module.exports = {
       fileChunksResponse.forEach( (fileChunk) => {
         actionResponse.actions.forEach( (processing) => {
           chunkEntityMappings.push({
-            chunkId: fileChunk._id.toString(),
+            fileChunkId: fileChunk._id.toString(),
             processConfig: processing,
+            rows: fileChunk.chunk.length,
             status: 'queued'
           });
         });

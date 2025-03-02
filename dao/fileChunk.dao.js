@@ -13,6 +13,15 @@ class FileChunkDao {
   async getFileChunkById({id}){
     return await fileChunk.findOne({_id: id}).lean();
   }
+
+  async getFileChunks({query, sort, skip, limit}){
+    const _fileChunks = await fileChunk.find(query)
+    .sort(sort)
+    .skip(skip)
+    .limit(limit)
+    .lean();
+    return _fileChunks;
+  }
 }
 
 module.exports = FileChunkDao;

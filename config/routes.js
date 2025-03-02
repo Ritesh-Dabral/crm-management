@@ -33,9 +33,9 @@ module.exports.routes = {
   *
   ***************************************************************************/
 
-    // user
-   'GET /crm/v1/bulk-actions': { action: 'bulk/list-actions' },
-   'GET /crm/v1/bulk-actions/:actionId': { action: 'bulk/action-details' },
-   'GET /crm/v1/bulk-actions/:actionId/stats': { action: 'bulk/action-summary' },
-   'POST /crm/v1/bulk-actions': { action: 'bulk/create-actions' }
-  };
+  // user
+  'GET /crm/v1/bulk-actions': { action: 'bulk/list-actions' },
+  'GET /crm/v1/bulk-actions/:actionId': { action: 'bulk/action-details' },
+  'GET /crm/v1/bulk-actions/:actionId/stats': { action: 'bulk/action-summary' },
+  'POST /crm/v1/bulk-actions': { action: 'bulk/create-actions' }
+};

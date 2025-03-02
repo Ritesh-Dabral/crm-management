@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 
 module.exports = new mongoose.Schema({
-  'chunkId':{
+  'fileChunkId':{
     type:mongoose.Schema.Types.ObjectId,
     ref:'actionFileChunk',
     required:true
@@ -15,5 +15,10 @@ module.exports = new mongoose.Schema({
     type:String,
     required:true,
     enum:['queued','ongoing','done','failed']
+  },
+  'rows':{
+    type: Number,
+    required: true,
+    min: 0
   }
-}, {timestamps:true, strict:false})
+}, {timestamps:true, strict:false});
