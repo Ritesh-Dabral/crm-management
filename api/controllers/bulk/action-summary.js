@@ -75,7 +75,7 @@ module.exports = {
         case 'done': {
           const done = (_.get(chunkEntity, 'result.nUpserted', 0) + _.get(chunkEntity, 'result.nModified', 0));
           stats.success += done;
-          stats.skipped = chunkEntity.rows - done;
+          stats.skipped += chunkEntity.rows - done;
           break;
         }
         default:

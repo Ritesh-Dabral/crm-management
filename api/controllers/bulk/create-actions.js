@@ -109,14 +109,6 @@ module.exports = {
               "rows":"number between 1 and 10000",
               "columns":"number between 1 and 100"
           }})
-        if(!Array.isArray(data)){
-          // return new Error('files must be a list in the format of '+example);
-          return false;
-        }
-        if(data.length === 0 || data.length > 5){
-          // return new Error('files must be between 1 and 5');
-          return false;
-        }
         let file = data
         let isValid = true;
         if(typeof file !== 'object'){
