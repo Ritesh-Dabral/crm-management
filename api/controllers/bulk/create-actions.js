@@ -107,7 +107,7 @@ module.exports = {
           "url":"string",
           "meta":{
               "rows":"number between 1 and 10000",
-              "columns":"number between 1 and 10"
+              "columns":"number between 1 and 100"
           }})
         if(!Array.isArray(data)){
           // return new Error('files must be a list in the format of '+example);
@@ -131,7 +131,7 @@ module.exports = {
         if (typeof file.meta.rows !== 'number' || file.meta.rows<1 || file.meta.rows>10000){
           isValid = false;
         }
-        if (typeof file.meta.columns !== 'number' || file.meta.columns<1 || file.meta.columns>10){
+        if (typeof file.meta.columns !== 'number' || file.meta.columns<1 || file.meta.columns>100){
           isValid = false;
         }
         if(!isValid){
